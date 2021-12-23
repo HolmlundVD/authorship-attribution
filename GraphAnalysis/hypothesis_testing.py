@@ -33,7 +33,7 @@ def deEmojify(inputString):
                      returnString += "[" + unicodedata.name(character) + "]"
                 except ValueError:
                      returnString += "[x]"
-    print(returnString)
+    
     return returnString
 
 

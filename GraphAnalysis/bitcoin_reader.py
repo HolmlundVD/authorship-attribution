@@ -3,25 +3,32 @@ import csv
 import ujson as json
 import traceback
 import line_profiler as lp
-import test_IB as ib
+import os
+import hypothesis_testing
 class bitcoin_reader(object):
-    training_file="bitcoin\\training"
-    testing_file="bitcoin\\testing"
-    verification_file="bitcoin\\verify"
+    training_file="GraphAnalysis\\bitcoin\\training"
+    testing_file="GraphAnalysis\\bitcoin\\testing"
+    verification_file="GraphAnalysis\\bitcoin\\verify"
+    train_folder=os.listdir("C:\\Users\\vdh24\\OneDrive\\Documents\\GitHub\\authorship-attribution\\GraphAnalysis\\texts\\Train")
+    test_folder=os.listdir("C:\\Users\\vdh24\\OneDrive\\Documents\\GitHub\\authorship-attribution\\GraphAnalysis\\texts\\Test")
+
     #
     #with this method we are reading the tweet file
     #and creating text files representing the tweets based off of it
     #
     #
     def read_csv():
-        path="Bitcoin_tweets.csv"
+        
+        path="GraphAnalysis\\Bitcoin_tweets.csv"
         lines=1489948
         line=0
         comments=dict()      
-        threshold=80
-        with open("Bitcoin_tweets.csv",encoding="utf-8") as csv_file:            
-            csv_reader=csv.reader(csv_file,delimiter=",")           
-            for row in csv_reader:             
+        threshold=800
+        with open(path,encoding="utf-8") as csv_file:            
+            csv_reader=csv.reader(csv_file,delimiter=",") 
+            
+            for row in csv_reader: 
+              
               if line==0:
                   line+=1
                   continue            
@@ -32,13 +39,14 @@ class bitcoin_reader(object):
                   
                   if not row[0] in comments.keys():                     
                       comments[row[0]]=list()
-                      comments[row[0]].append(row[9])
+                      comments[row[0]].append(hypothesis_testing.deEmojify(row[9]))
                   else:
                       
-                      comments[row[0]].append(row[9])             
+                      comments[row[0]].append(hypothesis_testing.deEmojify(row[9]))             
         
             
-        filtered_comments={k:v for k,v in comments.items() if len(v)>=threshold}      
+        filtered_comments={k:v for k,v in comments.items() if len(v)>=threshold}  
+        print("make")
         bitcoin_reader.make_comment_file(filtered_comments,threshold)
     #
     #this does the file creation aspect of making a text file for our tweets
@@ -73,39 +81,39 @@ class bitcoin_reader(object):
     #
     #this method takes the texts and tests them according to the test_IB framework
     #
-    def test_comment_file(train_file,test_file):
-        total_authors=0
-        total_found=0
-        train_data=dict()
-        test_data=list()
-        with open(train_file) as text:
-            train_data=json.load(text) 
-        text_list=list()
-        for author in train_data.keys():         
-            text_list.append(train_data[author][1])
-        top_authors_training=dict()
-        for author in train_data.keys():
-            top_authors_training[author]=ib.train(0.7,3,string_list=text_list,input_text=train_data[author][1])
-            for symbol in top_authors_training[author].keys():
-                top_authors_training[author][symbol]+=10**-20
-        print("training concluded")
-        with open(test_file) as test_texts:
-            test_data=json.load(test_texts)
-        for comment in test_data:
-            comment_freqs=(comment[0],tib.test(2,text=comment[1]))                   
-            for symbol in comment_freqs.keys():                       
-               comment_freqs[1][symbol]+=10**-20
-            best_matched_author=""
-            best_matched_score=sys.maxsize
-            for author in top_authors_training.items():
-                score=it.KLD(comment_freqs[1],author[1],10**-20)
-                if score<best_matched_score:                            
-                    best_matched_author=author[0]
-                    best_matched_score=score                    
-                    if comment[0]==best_matched_author:
-                        total_matched+=1
-        print(len(test_data))
-        print(total_matched)
+    #def test_comment_file(train_file,test_file):
+    #    total_authors=0
+    #    total_found=0
+    #    train_data=dict()
+    #    test_data=list()
+    #    with open(train_file) as text:
+    #        train_data=json.load(text) 
+    #    text_list=list()
+    #    for author in train_data.keys():         
+    #        text_list.append(train_data[author][1])
+    #    top_authors_training=dict()
+    #    for author in train_data.keys():
+    #        top_authors_training[author]=ib.train(0.7,3,string_list=text_list,input_text=train_data[author][1])
+    #        for symbol in top_authors_training[author].keys():
+    #            top_authors_training[author][symbol]+=10**-20
+    #    print("training concluded")
+    #    with open(test_file) as test_texts:
+    #        test_data=json.load(test_texts)
+    #    for comment in test_data:
+    #        comment_freqs=(comment[0],tib.test(2,text=comment[1]))                   
+    #        for symbol in comment_freqs.keys():                       
+    #           comment_freqs[1][symbol]+=10**-20
+    #        best_matched_author=""
+    #        best_matched_score=sys.maxsize
+    #        for author in top_authors_training.items():
+    #            score=it.KLD(comment_freqs[1],author[1],10**-20)
+    #            if score<best_matched_score:                            
+    #                best_matched_author=author[0]
+    #                best_matched_score=score                    
+    #                if comment[0]==best_matched_author:
+    #                    total_matched+=1
+    #    print(len(test_data))
+    #    print(total_matched)
 
     def run_test_hmm_ad(train_file,test_file,context_len:int):
         
@@ -124,14 +132,26 @@ class bitcoin_reader(object):
 
     def temp_method():
         bitcoin_reader.run_test_hmm_ad(bitcoin_reader.training_file+"80.txt",bitcoin_reader.testing_file+"80.txt",3)
+    def file_of_long_texts():
+        train=dict()
+        test=list()
+        
+        for file in bitcoin_reader.train_folder:
+            print(file)
+            with open("GraphAnalysis\\texts\\Train\\"+file) as text:
+                train[file]=[1,hypothesis_testing.deEmojify(text.read())]
+        for file in bitcoin_reader.test_folder:
+            with open("GraphAnalysis\\texts\\Test\\"+file) as text:
+                test.append([file,hypothesis_testing.deEmojify(text.read())])
+        with open("GraphAnalysis\\classical_tests\\train",'w') as file:
+            json.dump(train,file)
+        with open("GraphAnalysis\\classical_tests\\test",'w') as file:
+            json.dump(test,file)
 if __name__=="__main__":
+
     try:
         
-        lprofiler = lp.LineProfiler()  
-        lprofiler.add_function(bitcoin_reader.run_test_hmm_ad)
-        lp_wrapper=lprofiler(bitcoin_reader.temp_method)
-        lp_wrapper()
-        lprofiler.print_stats()
+        bitcoin_reader.read_csv()
        
     except:
         traceback.print_exc()

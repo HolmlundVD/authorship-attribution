@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\GraphAnalysis",
+    "\\GraphAnalysis\\bitcoin",
+    "\\GraphAnalysis\\classical_tests",
+    "\\GraphAnalysis\\texts",
+    "\\GraphAnalysis\\texts\\Test",
+    "\\GraphAnalysis\\texts\\Train"
+  ],
+  "SelectedNode": "\\GraphAnalysis\\bitcoin_reader.py",
+  "PreviewInSolutionExplorer": false
+}

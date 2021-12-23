@@ -21,7 +21,7 @@ from datetime import datetime
 import regex as re
 import traceback
 import line_profiler as lp
-from numba import jit
+
 
 import threading
 from multiprocessing import Manager
