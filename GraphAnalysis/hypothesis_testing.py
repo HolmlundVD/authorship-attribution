@@ -11,7 +11,6 @@ from unidecode import unidecode
 import numpy as np
 import pickle
 from hmmlearn import hmm
-from striprtf.striprtf import rtf_to_text 
 
 
 PATH=''
@@ -21,7 +20,7 @@ file1 = PATH+'Bitcoin_tweets.csv'
 def deEmojify(inputString):
     returnString = ""
     print("start")
-    for character in rtf_to_text(inputString):
+    for character in inputString:
         try:
             character.encode("ascii")
             returnString += character
