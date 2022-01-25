@@ -11,11 +11,27 @@ import math
 def KLD(P,Q,eps):    
     D=0    
     
-    for token in P.keys():
-        if token in Q.keys():                   
-            D=D+P[token]*math.log(P[token]/Q[token],2)
-        else:
-            D=D+P[token]*math.log(P[token]/eps,2)   
+    for i in range(len(P)):
+        for j in range(len(P[i])):  
+            if Q[i][j]:  
+                #if(P[i][j]*math.log(P[i][j]/Q[i][j],2)<0):
+                    
+                    #print(P[i][j])
+                    #print(Q[i][j])
+                    #print(math.log(P[i][j]/Q[i][j],2))
+                    #print(P[i][j]*math.log(P[i][j]/Q[i][j],2))
+                add=P[i][j]*math.log(P[i][j]/Q[i][j],2)
+                if add>0:
+                    D+=add
+            else:   
+                #if(P[i][j]*math.log(P[i][j]/eps,2)<0):
+                    #print(P[i][j])
+                    #print(eps)
+                    #print(math.log(P[i][j]/eps,2))
+                    #print(P[i][j]*math.log(P[i][j]/eps,2))
+                add=P[i][j]*math.log(P[i][j]/eps,2)  
+                if add>0:
+                    D+=add
     return D
 def bhattacharyya_distance(P,Q,eps):
     D=0

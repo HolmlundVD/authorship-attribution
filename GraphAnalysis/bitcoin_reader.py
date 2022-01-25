@@ -151,7 +151,7 @@ if __name__=="__main__":
 
     try:
         
-        bitcoin_reader.read_csv()
+        bitcoin_reader.file_of_long_texts()
        
     except:
         traceback.print_exc()

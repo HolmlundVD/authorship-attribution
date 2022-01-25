@@ -8,6 +8,7 @@ import pandas as pd
 import access_layered_structured as als
 import line_profiler as lp
 from striprtf.striprtf import rtf_to_text
+import Info_Theory as it
 
 alphabet="!@#$englishalphabet"
 threshold=0
@@ -20,24 +21,26 @@ def adversarial_with_markov(training_file,testing_file,context_len):
         train_data=json.load(text)
     with open(testing_file) as text:
         test_data=json.load(text)
-
+    all_emissions[alphabet]=np.zeros(shape=(128,128))
     for author,comments in list(train_data.items()): 
                     
         print(author)
         characters=[[i] for i in range(128)]
-        characters+=[[ord(i)] for i in hypothesis_testing.deEmojify(comments[1])]  
+        characters+=[[ord(i)] for i in hypothesis_testing.deEmojify(rtf_to_text(comments[1]))]  
         
-        all_emissions[author]=create_model_am(characters)              
-        for i in range(128):             
-            english+=comments[1][0:1000]
-    english_chars=[[i] for i in range(128)]
-    english_chars+=[[ord(i)] for i in hypothesis_testing.deEmojify(english)] 
+        all_emissions[author]=create_model_am(characters)   
+        all_emissions[alphabet]+=all_emissions[author]/len(train_data.items())
+        
+   
+    #english_chars=[[i] for i in range(128)]
+    #english_chars+=[[ord(i)] for i in hypothesis_testing.deEmojify(english)] 
     
     
-    all_emissions[alphabet]=create_model_am(english_chars)
+    #all_emissions[alphabet]=create_model_am(english_chars)
     print("done")
      
     
+
     
     #all_emissions[alphabet]=model
     total_matched=0
@@ -47,34 +50,49 @@ def adversarial_with_markov(training_file,testing_file,context_len):
     for tweet in test_data:       
         i+=1       
         freqs=np.zeros(shape=(128,128))
-        tweet_characters=[ord(i) for i in hypothesis_testing.deEmojify(tweet[1])]
-        for i in range(len(tweet_characters)-1):                   
-            freqs[tweet_characters[i],tweet_characters[i+1]]+=1.0  
-        
-        
-        freqs=freqs/(len(tweet_characters)-1)                
-        best_matched_score=-sys.maxsize
-        best_matched_author=""       
-        print(sum(sum(freqs)))
+        characters=[[i] for i in range(128)]
+        characters+=[[ord(i)] for i in hypothesis_testing.deEmojify(rtf_to_text(tweet[1]))]
 
-        for author in all_emissions.keys():  
+        for i in range(len(characters)-1):                   
+            freqs[characters[i],characters[i+1]]+=1.0  
             
-            if author !=alphabet: 
-                print(author)
+        print("freqs")
+        print(freqs[58][32])
+        #freqs=create_model_am(characters)
+        freqs=freqs/(len(characters)-1)                
+        best_matched_score=sys.maxsize
+        best_matched_author=""       
+        
+
+        for author in all_emissions:  
+            choices=dict()
+            if author !=alphabet:      
                 author_sum=0
-                plus_minus=0
-                for i in range(128):
-                    for j in range(128):    
-                        if sum(freqs[i])==0:
-                            author_sum+=0
-                        else:       
-                            if (freqs[i][j]/sum(freqs[i]))*(all_emissions[author][i][j]-all_emissions[alphabet][i][j]>0):
-                                plus_minus+=1
-                            elif(freqs[i][j]/sum(freqs[i]))*(all_emissions[author][i][j]-all_emissions[alphabet][i][j]<0):
-                                plus_minus-=1
-                            author_sum+=(freqs[i][j]/sum(freqs[i]))*(all_emissions[author][i][j]-all_emissions[alphabet][i][j]) 
-                print(plus_minus)          
-                if author_sum>best_matched_score:
+                author_div=it.KLD(all_emissions[author],all_emissions[alphabet],10**-20)
+                author_sum=it.KLD(all_emissions[author],freqs,10**-20)
+               
+                
+                #for i in range(128):
+                #    for j in range(128):    
+                #        if sum(freqs[i])==0:
+                #            author_sum+=0
+                #            choices[(i,j)]=0
+                #        else:   
+                            
+                #            choices[(i,j)]=(freqs[i][j]/sum(freqs[i]))*(all_emissions[author][i][j]-all_emissions[alphabet][i][j])
+                #            #/sum(freqs[i])
+                #            author_sum+=(freqs[i][j]/(sum(freqs[i])+0.01))*(all_emissions[author][i][j]-all_emissions[alphabet][i][j]) 
+                print(author_sum)       
+                #new_dict=sorted(choices.items(),key=lambda kv:kv[1],reverse=True)
+                print(author)
+                #for letter,score in new_dict[0:10]:
+                #    print(chr(letter[0])+""+chr(letter[1]))
+                #    print(score)
+                #    print(freqs[letter[0]][letter[1]]*len(characters)-1)
+                #    print(sum(freqs[letter[0]])*len(characters)-1)
+                #    print(all_emissions[author][letter[0]][letter[1]])
+                #    print(all_emissions[alphabet][letter[0]][letter[1]])
+                if author_sum<best_matched_score:
                     best_matched_score=author_sum
                     best_matched_author=author     
                

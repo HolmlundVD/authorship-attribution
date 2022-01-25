@@ -19,8 +19,7 @@ PATH=''
 file1 = PATH+'Bitcoin_tweets.csv'
 
 def deEmojify(inputString):
-    returnString = ""
-    print("start")
+    returnString = ""    
     for character in rtf_to_text(inputString):
         try:
             character.encode("ascii")
